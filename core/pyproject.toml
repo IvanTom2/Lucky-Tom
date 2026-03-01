@@ -1,0 +1,60 @@
+[project]
+name = "core"
+version = "0.1.0"
+description = "Lucky-Tom Core Service: users, balance, slot registration, game sessions"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "sqlalchemy[asyncio]",
+    "asyncpg",
+    "alembic",
+    "grpcio",
+    "grpcio-tools",
+    "aio-pika",
+    "redis",
+    "structlog",
+    "pydantic",
+    "pydantic-settings",
+    "bcrypt",
+    "pyjwt",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "httpx",
+    "mypy",
+    "ruff",
+]
+
+[tool.ruff]
+line-length = 88            # Длина строки (Black style)
+target-version = "py313"    # Под какую версию Python оптимизировать код
+src = ["src"]               # Где лежит исходный код
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "RUF", "ASYNC", "C901"]
+ignore = ["D", "ANN"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10  # Максимальная вложенность функций
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
+[tool.mypy]
+strict = true
+python_version = "3.13"
+mypy_path = "src"
+plugins = ["pydantic.mypy"]
+warn_return_any = true
+warn_unused_configs = true
+pretty = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
