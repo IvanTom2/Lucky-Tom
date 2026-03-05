@@ -1,0 +1,78 @@
+services:
+  redis:
+    image: redis:8.6.1
+    container_name: lucky_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./data:/data
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./docker/redis/users.acl:/usr/local/etc/redis/users.acl
+    command:
+      [
+        "redis-server",
+        "/usr/local/etc/redis/redis.conf",
+        "--requirepass",
+        "${REDIS_DEFAULT_PASSWORD}",
+      ]
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_DEFAULT_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 2048M
+
+  postgres:
+    image: postgres:18.3
+    container_name: lucky_postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - "${POSTGRES_HOST_PORT:-5433}:5432"
+    volumes:
+      - lucky_postgres_data:/var/lib/postgresql/data/pgdata
+      - ./docker/postgres/init-db.d:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -h localhost",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:4.2.4-management
+    container_name: lucky_rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    env_file:
+      - .env
+    volumes:
+      - lucky_rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  lucky_redis_data:
+  lucky_postgres_data:
+  lucky_rabbitmq_data:

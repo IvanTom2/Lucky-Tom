@@ -1,0 +1,7 @@
+CREATE DATABASE lucky_core;
+
+CREATE DATABASE lucky_slot;
+
+GRANT ALL PRIVILEGES ON DATABASE lucky_core TO admin;
+
+GRANT ALL PRIVILEGES ON DATABASE lucky_slot TO admin;
